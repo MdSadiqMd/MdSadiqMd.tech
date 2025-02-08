@@ -195,6 +195,13 @@ export default function ResourcesPage() {
         }, {} as Record<string, Resource[]>);
     }, [resources]);
 
+    const ensureValidUrl = (url: string) => {
+        if (!/^https?:\/\//i.test(url)) {
+            return `https://${url}`;
+        }
+        return url;
+    };
+
     return (
         <div className="min-h-screen bg-zinc-950 text-white p-4 sm:p-6 max-w-screen-2xl mx-auto">
             <div className="space-y-4 sm:space-y-6">
@@ -329,7 +336,11 @@ export default function ResourcesPage() {
                                         </div>
                                         <h3 className="font-medium mb-1 text-zinc-100">{resource.name}</h3>
                                         <p className="text-sm text-zinc-400">
-                                            <Link href={resource.resource} target="_blank" className="cursor-pointer">
+                                            <Link
+                                                href={ensureValidUrl(resource.resource)}
+                                                target="_blank"
+                                                className="cursor-pointer"
+                                            >
                                                 {resource.resource}
                                             </Link>
                                         </p>
