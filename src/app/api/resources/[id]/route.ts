@@ -5,7 +5,7 @@ export const runtime = 'edge';
 
 export async function DELETE(
     request: NextRequest,
-    context: { params: { id: string; }; }
+    context: any
 ) {
     try {
         const { id } = await context.params;
@@ -22,6 +22,6 @@ export async function DELETE(
         );
         return NextResponse.json({ success: true });
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to delete resource' }, { status: 500 });
+        return NextResponse.json({ error: `Failed to delete resource: ${error}` }, { status: 500 });
     }
 }

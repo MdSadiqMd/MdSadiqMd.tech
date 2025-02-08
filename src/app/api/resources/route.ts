@@ -8,7 +8,7 @@ export async function GET() {
         const gistContent = await getGistContent(process.env.RESOURCES_GIST_ID!);
         return NextResponse.json(gistContent?.data || []);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to fetch resources' }, { status: 500 });
+        return NextResponse.json({ error: `Failed to fetch resources: ${error}` }, { status: 500 });
     }
 }
 

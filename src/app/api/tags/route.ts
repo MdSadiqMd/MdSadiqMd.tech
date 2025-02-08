@@ -8,7 +8,7 @@ export async function GET() {
         const gistContent = await getGistContent(process.env.TAGS_GIST_ID!);
         return NextResponse.json(gistContent?.data || []);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to fetch tags' }, { status: 500 });
+        return NextResponse.json({ error: `Failed to fetch tags: ${error}` }, { status: 500 });
     }
 }
 
@@ -28,6 +28,6 @@ export async function POST(request: NextRequest) {
         }
         return NextResponse.json(tag);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to create tag' }, { status: 500 });
+        return NextResponse.json({ error: `Failed to create tag: ${error}` }, { status: 500 });
     }
 }
