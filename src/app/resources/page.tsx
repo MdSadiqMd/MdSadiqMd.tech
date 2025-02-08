@@ -362,7 +362,7 @@ export default function ResourcesPage() {
                             type="button"
                             variant="outline"
                             onClick={() => setDeleteDialogOpen(false)}
-                            className="bg-zinc-800 hover:bg-zinc-700 border-zinc-700"
+                            className="text-white hover:text-white bg-zinc-800 hover:bg-zinc-700 border-zinc-700"
                         >
                             Cancel
                         </Button>

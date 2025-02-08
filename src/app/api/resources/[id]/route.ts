@@ -5,13 +5,14 @@ export const runtime = 'edge';
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string; }; }
+    context: { params: { id: string; }; }
 ) {
     try {
+        const { id } = await context.params;
         const gistContent = await getGistContent(process.env.RESOURCES_GIST_ID!);
         const resources = gistContent?.data || [];
         const updatedResources = resources.filter(
-            (resource: any) => resource.id !== params.id
+            (resource: any) => resource.id !== id
         );
 
         await updateGist(
