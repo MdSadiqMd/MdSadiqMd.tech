@@ -3,10 +3,18 @@
 import type * as React from "react";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -16,6 +24,7 @@ import {
 } from "@/components/ui/select";
 
 interface Resource {
+    id?: string;
     name: string;
     resource: string;
     tag: string;
@@ -57,6 +66,8 @@ export default function ResourcesPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [newTag, setNewTag] = useState("");
     const [selectedColor, setSelectedColor] = useState(COLORS[0]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         resource: "",
@@ -75,8 +86,26 @@ export default function ResourcesPage() {
         const { name, resource, tag } = formData;
         if (name && resource && tag) {
             const tagColor = tags.find((t) => t.name === tag)?.color || COLORS[0];
-            setResources([...resources, { ...formData, color: tagColor }]);
+            const newResource = {
+                id: Math.random().toString(36).substr(2, 9),
+                ...formData,
+                color: tagColor
+            };
+            setResources([...resources, newResource]);
             setFormData({ name: "", resource: "", tag: "" });
+        }
+    };
+
+    const handleDeleteClick = (resource: Resource) => {
+        setResourceToDelete(resource);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (resourceToDelete) {
+            setResources(resources.filter(r => r.id !== resourceToDelete.id));
+            setDeleteDialogOpen(false);
+            setResourceToDelete(null);
         }
     };
 
@@ -204,14 +233,24 @@ export default function ResourcesPage() {
                                 {tag}
                             </h2>
                             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                {tagResources.map((resource, index) => (
+                                {tagResources.map((resource) => (
                                     <div
-                                        key={index}
+                                        key={resource.id}
                                         className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors hover:border-zinc-700"
                                     >
-                                        <div className="flex items-center space-x-2 mb-2">
-                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: resource.color }} />
-                                            <span className="text-sm text-zinc-400">{resource.tag}</span>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: resource.color }} />
+                                                <span className="text-sm text-zinc-400">{resource.tag}</span>
+                                            </div>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="h-8 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-500"
+                                                onClick={() => handleDeleteClick(resource)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
                                         <h3 className="font-medium mb-1 text-zinc-100">{resource.name}</h3>
                                         <p className="text-sm text-zinc-400">
@@ -226,6 +265,35 @@ export default function ResourcesPage() {
                     ))}
                 </div>
             </div>
+
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="bg-zinc-900 border-zinc-700">
+                    <DialogHeader>
+                        <DialogTitle className="text-zinc-100">Delete Resource</DialogTitle>
+                        <DialogDescription className="text-zinc-400">
+                            Are you sure you want to delete this resource? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-start">
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDeleteConfirm}
+                            className="bg-red-500 hover:bg-red-600"
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setDeleteDialogOpen(false)}
+                            className="bg-zinc-800 hover:bg-zinc-700 border-zinc-700"
+                        >
+                            Cancel
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
