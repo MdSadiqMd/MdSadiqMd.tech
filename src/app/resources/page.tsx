@@ -1,7 +1,7 @@
 "use client";
 
 import type * as React from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { PlusIcon, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -74,25 +74,100 @@ export default function ResourcesPage() {
         tag: "",
     });
 
-    const addTag = () => {
-        if (newTag && !tags.find((t) => t.name === newTag)) {
-            setTags([...tags, { name: newTag, color: selectedColor }]);
-            setNewTag("");
+    const fetchResources = async () => {
+        try {
+            const response = await fetch('/api/resources');
+            const data = await response.json();
+            setResources(data as any);
+        } catch (error) {
+            console.error('Failed to fetch resources:', error);
         }
     };
 
-    const addResource = (e: React.FormEvent) => {
+    const fetchTags = async () => {
+        try {
+            const response = await fetch('/api/tags');
+            const data = await response.json();
+            setTags(data as any);
+        } catch (error) {
+            console.error('Failed to fetch tags:', error);
+        }
+    };
+
+    const addTag = async () => {
+        if (newTag && !tags.find((t) => t.name === newTag)) {
+            try {
+                const response = await fetch('/api/tags', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: newTag,
+                        color: selectedColor,
+                    }),
+                });
+
+                if (response.ok) {
+                    await fetchTags();
+                    setNewTag("");
+                }
+            } catch (error) {
+                console.error('Failed to add tag:', error);
+            }
+        }
+    };
+
+    const addResource = async (e: React.FormEvent) => {
         e.preventDefault();
         const { name, resource, tag } = formData;
-        if (name && resource && tag) {
+        if (!name || !resource || !tag) {
+            alert('Please fill all fields');
+            return;
+        }
+
+        try {
             const tagColor = tags.find((t) => t.name === tag)?.color || COLORS[0];
-            const newResource = {
-                id: Math.random().toString(36).substr(2, 9),
-                ...formData,
-                color: tagColor
+            const resourceData = {
+                name: name.trim(),
+                resource: resource.trim(),
+                tag: tag.trim(),
+                color: tagColor,
             };
-            setResources([...resources, newResource]);
+
+            const response = await fetch('/api/resources', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(resourceData),
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(`Error: ${errorData || 'Failed to add resource'}`);
+                return;
+            }
+            await fetchResources();
             setFormData({ name: "", resource: "", tag: "" });
+        } catch (error) {
+            console.error('Failed to add resource:', error);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (resourceToDelete) {
+            try {
+                const response = await fetch(`/api/resources/${resourceToDelete.id}`, {
+                    method: 'DELETE',
+                });
+                if (response.ok) {
+                    await fetchResources();
+                    setDeleteDialogOpen(false);
+                    setResourceToDelete(null);
+                }
+            } catch (error) {
+                console.error('Failed to delete resource:', error);
+            }
         }
     };
 
@@ -101,13 +176,10 @@ export default function ResourcesPage() {
         setDeleteDialogOpen(true);
     };
 
-    const handleDeleteConfirm = () => {
-        if (resourceToDelete) {
-            setResources(resources.filter(r => r.id !== resourceToDelete.id));
-            setDeleteDialogOpen(false);
-            setResourceToDelete(null);
-        }
-    };
+    useEffect(() => {
+        fetchResources();
+        fetchTags();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -173,13 +245,14 @@ export default function ResourcesPage() {
                     </Popover>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <form onSubmit={addResource} className="flex flex-col sm:flex-row gap-3">
                     <Input
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
                         className="h-9 bg-zinc-900 border-zinc-700 focus:ring-2 focus:ring-violet-500/20 hover:border-zinc-600"
                         placeholder="Description"
+                        required
                     />
                     <Input
                         name="resource"
@@ -187,10 +260,12 @@ export default function ResourcesPage() {
                         onChange={handleInputChange}
                         className="h-9 bg-zinc-900 border-zinc-700 focus:ring-2 focus:ring-violet-500/20 hover:border-zinc-600"
                         placeholder="Resource"
+                        required
                     />
                     <Select
                         value={formData.tag}
                         onValueChange={(value) => setFormData({ ...formData, tag: value })}
+                        required
                     >
                         <SelectTrigger className="h-9 text-white bg-zinc-900 border-zinc-700 focus:ring-2 focus:ring-violet-500/20 hover:border-zinc-600">
                             <SelectValue placeholder="Select tag" />
@@ -214,13 +289,13 @@ export default function ResourcesPage() {
                         </SelectContent>
                     </Select>
                     <Button
-                        onClick={addResource}
+                        type="submit"
                         className="h-9 px-4"
-                        variant={"secondary"}
+                        variant="secondary"
                     >
                         Add Resource
                     </Button>
-                </div>
+                </form>
 
                 <div className="space-y-6">
                     {Object.entries(groupedResources).map(([tag, tagResources]) => (
