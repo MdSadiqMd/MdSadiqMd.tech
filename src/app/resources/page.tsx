@@ -58,7 +58,35 @@ const COLORS = [
     "#2DD4BF", // teal-400
     "#4ADE80", // green-400
     "#FB7185", // rose-400
-    "#C084FC"  // purple-400
+    "#C084FC", // purple-400
+    "#F9FAFB", // gray-50
+    "#F3F4F6", // gray-100
+    "#E5E7EB", // gray-200
+    "#D1D5DB", // gray-300
+    "#9CA3AF", // gray-400
+    "#6B7280", // gray-500
+    "#4B5563", // gray-600
+    "#374151", // gray-700
+    "#1F2937", // gray-800
+    "#111827", // gray-900
+    "#BFDBFE", // blue-200
+    "#3B82F6", // blue-500
+    "#2563EB", // blue-600
+    "#1D4ED8", // blue-700
+    "#FDE68A", // amber-200
+    "#F59E0B", // amber-500
+    "#D97706", // amber-600
+    "#B45309", // amber-700
+    "#A7F3D0", // emerald-200
+    "#059669", // emerald-600
+    "#047857", // emerald-700
+    "#DDD6FE", // violet-200
+    "#7C3AED", // violet-600
+    "#6D28D9", // violet-700
+    "#FCA5A5", // red-200
+    "#EF4444", // red-500
+    "#DC2626", // red-600
+    "#B91C1C"  // red-700
 ];
 
 export default function ResourcesPage() {
